@@ -148,16 +148,19 @@ failure to load it.
       device/nubia/nx729j/prebuilt/kernel
   # BoardConfig.mk: set TARGET_PREBUILT_KERNEL to prebuilt/kernel and comment
   # out BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE, then rebuild.
-  # Verification: YARP_ALLOW_KERNEL=1 scripts/build-yarp.sh package
+  # Verification: scripts/build-yarp.sh package
   ```
 * **No SELinux policy is built.** TWRP recovery runs permissive, so the stock
   vendor HALs are not blocked by policy. Do not copy this tree into a build that
   enforces SELinux without adding policy for the three vendor services.
-* **Kernel modules:** the stock `vendor_dlkm` module tree (~91 MiB, 263 `.ko`)
-  is staged as the known-good baseline; only `adsp_loader_dlkm.ko`,
-  `qti_battery_charger.ko` and `qcrypto-msm_dlkm.ko` are actually loaded
-  (`TW_LOAD_VENDOR_MODULES`). Trimming the staged set is the first knob if the
-  image ever approaches the 100 MiB partition limit.
+* **Kernel modules:** only the modules that recovery actually loads are staged
+  (`TW_LOAD_VENDOR_MODULES`: `adsp_loader_dlkm.ko`, `qti_battery_charger.ko`,
+  `qcrypto-msm_dlkm.ko`) plus their `modules.dep` closure and the UFS-PHY, PMIC
+  ADC/temp-alarm and `gpio_keys_nubia` modules — 23 `.ko`, ~1.8 MiB. The other
+  234 stock `vendor_dlkm` modules (Wi-Fi, camera, kgsl, video, ~91 MiB) are not
+  needed by recovery and were dropped so the image stays far below the 100 MiB
+  partition limit. Everything else (display, touch, UFS) is built into the stock
+  kernel, which is why the existing NX729J tree also loads only two modules.
 * **No QCOM `bootctrl` module.** The TWRP 16 manifest has no
   `hardware/qcom-caf/bootctrl`, so slot handling uses the generic AOSP boot HAL
   that `bootable/recovery` installs when `AB_OTA_UPDATER := true`. Flashing to
