@@ -36,3 +36,10 @@ PRODUCT_SOONG_NAMESPACES += $(DEVICE_PATH)
 
 TWRP_REQUIRED_MODULES += \
     nx729j_prebuilt
+
+# TWRP_REQUIRED_MODULES is consumed by the TWRP build glue; listing the module
+# in PRODUCT_PACKAGES as well makes sure the stock vendor modules and the
+# touch/display firmware are staged into the recovery ramdisk even if that
+# glue changes.
+PRODUCT_PACKAGES += \
+    nx729j_prebuilt
