@@ -74,7 +74,19 @@ case "${1:-}" in
     fi
     echo "TARGET_PRODUCT=${TARGET_PRODUCT} TARGET_DEVICE=${TARGET_DEVICE:-}"
     mka -j"${BUILD_JOBS:-2}" installclean
-    mka -j"${BUILD_JOBS:-2}" recoveryimage
+    if ! mka -j"${BUILD_JOBS:-2}" recoveryimage; then
+      echo "::error::mka recoveryimage failed." >&2
+      # Soong product config is assembled from BoardConfig/device makefiles as
+      # JSON.  A value that is not JSON safe (for example a quoted string) is
+      # only reported by merge_json, so dump the neighbourhood of every such
+      # file to make the offending line obvious in the build log.
+      for f in "${source_root}"/out/soong/soong.*.extra.variables "${source_root}"/out/soong/soong.*.variables; do
+        [[ -f "$f" ]] || continue
+        echo "--- ${f}" >&2
+        nl -ba "$f" | sed -n '1,80p' >&2
+      done
+      exit 1
+    fi
     image="${source_root}/out/target/product/${product}/recovery.img"
     if [[ ! -s "${image}" ]]; then
       echo "::error::The build did not produce ${image}." >&2
