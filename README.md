@@ -71,6 +71,18 @@ directory: `build/envsetup.sh` finds devices with `find`, which skips symlinks),
 this device tree is never fetched from a remote and is always the one you have
 checked out.
 
+## Download
+
+A prebuilt image is attached to the
+[v1.0-nx729j release](https://github.com/MasterOfStar/YARP-nx729j/releases/tag/v1.0-nx729j):
+
+```
+https://github.com/MasterOfStar/YARP-nx729j/releases/download/v1.0-nx729j/YARP-nx729j-A13-recovery.img
+sha256 085a8a10fd3367b42fcdc01ed9d8bb67d6989e0444a90081ce05f110b5a252db
+```
+
+Build run: https://github.com/MasterOfStar/YARP-nx729j/actions/runs/42506856226 (all steps green).
+
 ## Flashing
 
 The device has an independent `recovery` partition in slot `a`/`b`
