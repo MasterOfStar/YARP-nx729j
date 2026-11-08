@@ -26,12 +26,38 @@ DEFAULT_TARGET = REPO / "device/nubia/nx729j/prebuilt/kernel"
 HEADER_SIZES = {3: 1580, 4: 1584}
 
 
-def fetch(url, destination):
-    subprocess.run([
-        "curl", "-sSL", "--retry", "5", "--retry-delay", "5", "--max-time", "900",
-        "-H", "Accept: application/vnd.github.raw",
-        url, "-o", str(destination),
-    ], check=True)
+ATTEMPTS = 4
+
+
+def fetch(url, destination, expected_size=None, token=None):
+    """Download url, resuming across attempts.
+
+    GitHub occasionally drops the connection while streaming a 96 MiB blob
+    (curl exit 56), so every attempt resumes with `-C -` and the loop keeps
+    going until the expected size is on disk.
+    """
+    headers = ["-H", "Accept: application/vnd.github.raw"]
+    if token:
+        headers += ["-H", f"Authorization: Bearer {token}"]
+    last = None
+    for attempt in range(1, ATTEMPTS + 1):
+        if expected_size is not None and destination.exists():
+            if destination.stat().st_size == expected_size:
+                return
+        subprocess.run([
+            "curl", "-sSL", "--retry", "3", "--retry-delay", "5",
+            "--retry-all-errors", "--max-time", "1800", "-C", "-",
+            *headers, url, "-o", str(destination),
+        ], check=False)
+        if expected_size is None:
+            if destination.exists() and destination.stat().st_size:
+                return
+        elif destination.exists() and destination.stat().st_size == expected_size:
+            return
+        last = destination.stat().st_size if destination.exists() else 0
+        print(f"attempt {attempt}/{ATTEMPTS} incomplete ({last} bytes), retrying")
+    raise SystemExit(
+        f"could not download {url} (got {last} of {expected_size} bytes)")
 
 
 def main():
@@ -51,7 +77,9 @@ def main():
         else:
             boot_img = Path(workdir) / "boot.img"
             print(f"downloading {firmware['repository']} boot.img ...")
-            fetch(url, boot_img)
+            fetch(url, boot_img,
+                  expected_size=firmware["boot_img_size"],
+                  token=os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
         data = boot_img.read_bytes()
         if len(data) != firmware["boot_img_size"]:
             raise SystemExit(f"boot.img size mismatch: {len(data)}")
