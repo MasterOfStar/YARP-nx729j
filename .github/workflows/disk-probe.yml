@@ -1,0 +1,15 @@
+name: Runner disk probe
+on: workflow_dispatch
+jobs:
+  probe:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 5
+    steps:
+      - name: Report disk size
+        run: |
+          df -h /
+          df -B1 / | awk 'NR==2 {printf "total_bytes=%s avail_bytes=%s\n", $2, $4}'
