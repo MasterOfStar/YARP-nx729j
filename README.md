@@ -84,6 +84,46 @@ fastboot reboot recovery      # or: hold Vol+ + Power
 Keep a copy of your stock `recovery_a`/`recovery_b` before flashing (TWRP itself
 can back it up once booted, or use `fastboot fetch`/`dd` from a rooted boot).
 
+## Running it against a different ROM
+
+The staged vendor HALs come from the stock Android 13 firmware
+(`TKQ1.220915.002`), because that is the only vendor image this device has.
+Decryption depends on the phone's **current** `/vendor` and on how its `/data`
+was encrypted, so a phone running a newer ROM (for example Android 17 on the
+same 5.15-android13 kernel) only works as-is while it still carries the stock
+vendor crypto stack: AIDL `android.hardware.security.keymint` **2.0** plus HIDL
+`android.hardware.gatekeeper@1.0`. The kernel is not a concern — the image
+carries the stock GKI 5.15.41 kernel and its matching module set.
+
+Check the live device before flashing:
+
+```bash
+adb shell getprop ro.vendor.build.fingerprint
+adb shell ls /vendor/bin/hw | grep -Ei 'keymint|gatekeeper|keymaster|qseecom'
+adb shell cat /vendor/etc/vintf/manifest/*keymint*.xml
+adb shell grep -E 'userdata|metadata' /vendor/etc/fstab.qcom
+adb shell getprop ro.crypto.state; adb shell getprop ro.crypto.type
+```
+
+* `keymint` manifest with `<version>2</version>` and
+  `android.hardware.gatekeeper@1.0-service-qti` → this tree is already correct.
+* `<version>3</version>`/`<version>4</version>`, an AIDL gatekeeper
+  (`android.hardware.gatekeeper-rust-service-qti`) or a different
+  `fileencryption=`/`keydirectory=` line → re-stage from the phone itself:
+
+  ```bash
+  scripts/pull-device-blobs.py            # adb pull + dependency closure
+  python3 scripts/check-tree.py           # must print status: passed
+  ```
+
+  The script pulls only the crypto services, their ELF closure and the matching
+  `*.rc`/VINTF fragments into `device/nubia/nx729j/recovery/root`, and writes a
+  report to `dist/pulled-device/report.json`.
+
+TWRP 16's vold only understands LSKF-based synthetic passwords (`spblob` v2/v3,
+no Weaver protector). A ROM that switched `/data` to a Weaver protector would
+need a different recovery stack.
+
 ## How decryption works on this device
 
 TWRP 16 does not carry its own crypto implementation. The chain is:
