@@ -1,0 +1,399 @@
+{
+  "description": "Vendor crypto blobs staged into the YARP recovery ramdisk for Nubia NX729J",
+  "source": {
+    "repository": "https://github.com/RandomPush/nubia_nx729j_dump",
+    "commit": "e9f5a2b43408294358ec3c736b092942b4613609",
+    "build_fingerprint": "nubia/NX729J/NX729J:13/TKQ1.220915.002/eng.nubia.20221114.120645:user/release-keys",
+    "cdn": "https://cdn.jsdelivr.net/gh/RandomPush/nubia_nx729j_dump@e9f5a2b43408294358ec3c736b092942b4613609/"
+  },
+  "staged_by": "scripts/fetch_blobs.py (ELF DT_NEEDED closure, vendor side only)",
+  "files": {
+    "vendor/bin/hw/android.hardware.gatekeeper@1.0-service-qti": {
+      "needed": [
+        "android.hardware.gatekeeper@1.0.so",
+        "libhardware.so",
+        "libhidlbase.so",
+        "libutils.so",
+        "liblog.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "e22c7976b205dabdd20e6fc9d68042f3df1e982d2b3f1098a293f66408476382",
+      "size": 15544,
+      "soname": null
+    },
+    "vendor/bin/hw/android.hardware.security.keymint-service-qti": {
+      "needed": [
+        "liblog.so",
+        "libcutils.so",
+        "libbase.so",
+        "libutils.so",
+        "libhardware.so",
+        "libbinder_ndk.so",
+        "libhidlbase.so",
+        "android.hardware.keymaster@4.0.so",
+        "libqtikeymint.so",
+        "libcrypto.so",
+        "android.hardware.security.keymint-V2-ndk.so",
+        "android.hardware.security.secureclock-V1-ndk.so",
+        "android.hardware.security.sharedsecret-V1-ndk.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "104325882c4b03dde44daaf645b05272757fc3df0c69fb6e56fa0c2c27617dba",
+      "size": 41136,
+      "soname": null
+    },
+    "vendor/bin/qseecomd": {
+      "needed": [
+        "libcutils.so",
+        "libutils.so",
+        "liblog.so",
+        "libQSEEComAPI.so",
+        "libdrmfs.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "d6f58998f60d692a776cf04c623ae06dba5679f6a2939b55ac4ef119967a4e2d",
+      "size": 32648,
+      "soname": null
+    },
+    "vendor/lib64/android.hardware.gatekeeper@1.0.so": {
+      "needed": [
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "2ac88dd2260b5fd0e2b961357bc56614592e2c91d44d9cb4445fee74f88d27b5",
+      "size": 119088,
+      "soname": "android.hardware.gatekeeper@1.0.so"
+    },
+    "vendor/lib64/android.hardware.keymaster@3.0.so": {
+      "needed": [
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "5b2aea9585f35f4fb97f81b1b662cd8b64014b0846c2dfb291ec419f4018a1e5",
+      "size": 182184,
+      "soname": "android.hardware.keymaster@3.0.so"
+    },
+    "vendor/lib64/android.hardware.keymaster@4.0.so": {
+      "needed": [
+        "android.hardware.keymaster@3.0.so",
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "d8246c1b84324730789202b5e89e9c77e4e2d6319ea522a4abf475495e5f73ba",
+      "size": 205672,
+      "soname": "android.hardware.keymaster@4.0.so"
+    },
+    "vendor/lib64/android.hardware.keymaster@4.1.so": {
+      "needed": [
+        "android.hardware.keymaster@3.0.so",
+        "android.hardware.keymaster@4.0.so",
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "d85031297d37e27572bf370081907df144f00a31f8d13cf02dc771667adf28d7",
+      "size": 146840,
+      "soname": "android.hardware.keymaster@4.1.so"
+    },
+    "vendor/lib64/android.hidl.allocator@1.0.so": {
+      "needed": [
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "f6f6c74fa345be7f8adc0be150d8685dc732e6bdcc1cd3724900ef9e66a85076",
+      "size": 80040,
+      "soname": "android.hidl.allocator@1.0.so"
+    },
+    "vendor/lib64/hw/android.hardware.gatekeeper@1.0-impl-qti.so": {
+      "needed": [
+        "android.hardware.gatekeeper@1.0.so",
+        "libhidlbase.so",
+        "libutils.so",
+        "liblog.so",
+        "libcutils.so",
+        "libkeymasterdeviceutils.so",
+        "libqcbor.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "9e92ad62c6bf2688a58c29e49468115c9557c612a5d5cf5569d4cd112b5a18e9",
+      "size": 58360,
+      "soname": "android.hardware.gatekeeper@1.0-impl-qti.so"
+    },
+    "vendor/lib64/hw/vendor.qti.hardware.qseecom@1.0-impl.so": {
+      "needed": [
+        "libbase.so",
+        "libhidlbase.so",
+        "libhidlmemory.so",
+        "libutils.so",
+        "libcutils.so",
+        "liblog.so",
+        "vendor.qti.hardware.qseecom@1.0.so",
+        "libQSEEComAPI.so",
+        "android.hidl.allocator@1.0.so",
+        "android.hidl.memory@1.0.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "94da5db20bdfec228f2d8eef96d9a59871fc67b2b7f94a16b77081de9005ec88",
+      "size": 58768,
+      "soname": "vendor.qti.hardware.qseecom@1.0-impl.so"
+    },
+    "vendor/lib64/libQSEEComAPI.so": {
+      "needed": [
+        "libdmabufheap.so",
+        "liblog.so",
+        "libutils.so",
+        "libqcbor.so",
+        "libminkdescriptor.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "1bb7c4fea19181615c72d10371b3621173cc4cbd304464f1a0d4de29ceb6ef9f",
+      "size": 62320,
+      "soname": "libQSEEComAPI.so"
+    },
+    "vendor/lib64/libdiag.so": {
+      "needed": [
+        "liblog.so",
+        "libc.so",
+        "libcutils.so",
+        "libc++.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "3f793bbd7478bc47de5c1e357337ee16d1b3decda8f07ac7202968248afdcafd",
+      "size": 309296,
+      "soname": "libdiag.so"
+    },
+    "vendor/lib64/libdrmfs.so": {
+      "needed": [
+        "libutils.so",
+        "libcutils.so",
+        "libdiag.so",
+        "liblog.so",
+        "libQSEEComAPI.so",
+        "libxml2.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "5ae7a0c91ef9dbd69b23542915bae3f1c47a9959f661d977ca65b9b3ad3bbe86",
+      "size": 44776,
+      "soname": "libdrmfs.so"
+    },
+    "vendor/lib64/libkeymaster_messages.so": {
+      "needed": [
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "6309113393aa88d6b061b1b45fc4d74516590d799113149949fa9676282439dc",
+      "size": 113744,
+      "soname": "libkeymaster_messages.so"
+    },
+    "vendor/lib64/libkeymasterdeviceutils.so": {
+      "needed": [
+        "libion.so",
+        "libcutils.so",
+        "libQSEEComAPI.so",
+        "liblog.so",
+        "libcrypto.so",
+        "libdmabufheap.so",
+        "libspcom.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "7556b6f7e294797015f14925f5e94911791d065a839549a22923ddd5efe69587",
+      "size": 36200,
+      "soname": "libkeymasterdeviceutils.so"
+    },
+    "vendor/lib64/libkeymasterutils.so": {
+      "needed": [
+        "libcutils.so",
+        "libQSEEComAPI.so",
+        "liblog.so",
+        "libcrypto.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "cb4ef2dff65dd4c02840fa48373c7c4a183bca2832552872ae92ddff653bdb7e",
+      "size": 247792,
+      "soname": "libkeymasterutils.so"
+    },
+    "vendor/lib64/libminkdescriptor.so": {
+      "needed": [
+        "liblog.so",
+        "libutils.so",
+        "libqcbor.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "2a5ceb5f00c920dbd221aeae5fa90da0c75aa73bb28fc958c2e55963ac75dcf7",
+      "size": 41504,
+      "soname": "libminkdescriptor.so"
+    },
+    "vendor/lib64/libqcbor.so": {
+      "needed": [
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "bda86553e45dce1da186830619909b3bae95ff9a91ce3a5df94fa0801c8b2500",
+      "size": 23440,
+      "soname": "libqcbor.so"
+    },
+    "vendor/lib64/libqtikeymint.so": {
+      "needed": [
+        "liblog.so",
+        "libcrypto.so",
+        "libhidlbase.so",
+        "libutils.so",
+        "libcutils.so",
+        "libkeymasterdeviceutils.so",
+        "libbase.so",
+        "libqcbor.so",
+        "libkeymaster_messages.so",
+        "android.hardware.keymaster@4.0.so",
+        "android.hardware.keymaster@4.1.so",
+        "android.hardware.security.keymint-V2-ndk.so",
+        "android.hardware.security.secureclock-V1-ndk.so",
+        "android.hardware.security.sharedsecret-V1-ndk.so",
+        "libbinder_ndk.so",
+        "libkeymasterutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "3df05d74e733dc9ce8434aa58a459da1bc982b5bc46986ed012d090e40b743e4",
+      "size": 271056,
+      "soname": "libqtikeymint.so"
+    },
+    "vendor/lib64/libspcom.so": {
+      "needed": [
+        "libion.so",
+        "libdmabufheap.so",
+        "libvmmem.so",
+        "libutils.so",
+        "libcutils.so",
+        "liblog.so",
+        "libcrypto.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "54ff8496197114afc3ace4cdea1a6e08da717c81cafcc7f764fb06a4b8d783de",
+      "size": 140968,
+      "soname": "libspcom.so"
+    },
+    "vendor/lib64/libvmmem.so": {
+      "needed": [
+        "liblog.so",
+        "libbase.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "7fd21332c822b30fa3fdde9263b98684031b2a5fa2fbd2dffc54a3a39a917229",
+      "size": 40688,
+      "soname": "libvmmem.so"
+    },
+    "vendor/lib64/vendor.qti.hardware.qseecom@1.0.so": {
+      "needed": [
+        "libhidlbase.so",
+        "liblog.so",
+        "libutils.so",
+        "libcutils.so",
+        "libc++.so",
+        "libc.so",
+        "libm.so",
+        "libdl.so"
+      ],
+      "sha256": "9c4f415805014fd09e0ea8adfeeca15fcb07fb7bc13f6059a652b9ad4eb8d8e3",
+      "size": 157920,
+      "soname": "vendor.qti.hardware.qseecom@1.0.so"
+    }
+  },
+  "system_provided": [
+    "system/system/lib64/android.hardware.security.keymint-V2-ndk.so",
+    "system/system/lib64/android.hardware.security.secureclock-V1-ndk.so",
+    "system/system/lib64/android.hardware.security.sharedsecret-V1-ndk.so",
+    "system/system/lib64/android.hidl.memory@1.0.so",
+    "system/system/lib64/libbase.so",
+    "system/system/lib64/libbinder_ndk.so",
+    "system/system/lib64/libc++.so",
+    "system/system/lib64/libc.so",
+    "system/system/lib64/libcrypto.so",
+    "system/system/lib64/libcutils.so",
+    "system/system/lib64/libdl.so",
+    "system/system/lib64/libdmabufheap.so",
+    "system/system/lib64/libhardware.so",
+    "system/system/lib64/libhidlbase.so",
+    "system/system/lib64/libhidlmemory.so",
+    "system/system/lib64/libion.so",
+    "system/system/lib64/liblog.so",
+    "system/system/lib64/libm.so",
+    "system/system/lib64/libutils.so",
+    "system/system/lib64/libxml2.so"
+  ],
+  "unresolved": {}
+}

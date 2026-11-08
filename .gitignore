@@ -1,0 +1,4 @@
+dist/
+out/
+*.img
+*.zip

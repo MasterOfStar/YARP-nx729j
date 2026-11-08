@@ -1,0 +1,12 @@
+# Stock NX729J gatekeeper HIDL service, staged into the YARP recovery ramdisk.
+# Stock init never starts it from this file: the service is in class early_hal
+# and recovery only class_start's "default" and "hal", so
+# init.recovery.qcom.rc starts it explicitly from "on post-fs".
+#
+# drmrpc is added to the supplementary groups because the HAL talks to
+# /dev/qseecom, which init.recovery.qcom.rc sets to 0660 system:drmrpc.
+service gatekeeper-1-0 /vendor/bin/hw/android.hardware.gatekeeper@1.0-service-qti
+    class early_hal
+    user system
+    group system drmrpc
+    setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib64/hw:/system/lib64

@@ -1,0 +1,12 @@
+# ADB
+ro.adb.secure=0
+ro.boot.dynamic_partitions=true
+
+# Gatekeeper: keep the stock SPU configuration so the QTI HAL matches the
+# vendor build this recovery is paired with.
+vendor.gatekeeper.disable_spu=true
+
+# Crypto: the vendor KeyMint HAL is an AIDL 2.0 service and the gatekeeper HAL
+# is a legacy HIDL 1.0 service. Tell TWRP/vold which keymaster generation the
+# vendor image actually ships so decryption does not probe the wrong HAL.
+keymaster_ver=4.x

@@ -1,0 +1,98 @@
+name: Build YARP recovery for Nubia NX729J
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'device/**'
+      - 'scripts/**'
+      - 'sources.json'
+      - '.github/workflows/build.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: yarp-nx729j-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Sync sources, build recovery, verify image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      YARP_SOURCE_DIR: /build/yarp
+      SYNC_JOBS: 8
+      BUILD_JOBS: 2
+    steps:
+      - name: Check out the builder
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Prepare runner storage
+        run: bash scripts/prepare-runner.sh
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            git-core gnupg flex bison build-essential zip curl zlib1g-dev \
+            libc6-dev-i386 libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils \
+            xsltproc unzip fontconfig python3 lz4 cpio bc rsync lzop kmod \
+            device-tree-compiler libssl-dev libncurses-dev repo
+          git config --global user.name 'YARP Build'
+          git config --global user.email 'yarp-build@users.noreply.github.com'
+          mkdir -p logs dist
+
+      - name: Fetch the stock kernel for the recovery image
+        run: python3 scripts/fetch-stock-kernel.py | tee logs/fetch-kernel.log
+
+      - name: Validate the device tree before syncing 95 GiB of sources
+        run: python3 scripts/check-tree.py | tee logs/check-tree.log
+
+      - name: Sync pinned sources
+        run: bash scripts/build-yarp.sh sync | tee logs/sync.log
+
+      - name: Build recovery image
+        run: |
+          bash scripts/resource-report.sh > logs/resource.log 2>&1 &
+          echo "resource monitor pid: $!"
+          sudo systemd-run --scope --unit=yarp-build \
+            --property=MemoryHigh=11G --property=MemoryMax=13G \
+            --property=MemorySwapMax=12G --property=CPUWeight=50 \
+            runuser -u "$(id -un)" -- env \
+              YARP_SOURCE_DIR="$YARP_SOURCE_DIR" \
+              BUILD_JOBS="$BUILD_JOBS" \
+              nice -n 10 bash "$GITHUB_WORKSPACE/scripts/build-yarp.sh" build \
+            | tee logs/build.log
+
+      - name: Package and verify
+        run: bash scripts/build-yarp.sh package | tee logs/verification.log
+
+      - name: Upload recovery image
+        uses: actions/upload-artifact@v4
+        with:
+          name: YARP-nx729j-${{ github.run_id }}
+          path: dist/
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14
+
+      - name: Upload build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: YARP-nx729j-${{ github.run_id }}-logs
+          path: logs/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Report runner resources
+        if: always()
+        run: |
+          df -h / /build 2>/dev/null || df -h /
+          free -m
+          tail -n 40 logs/resource.log 2>/dev/null || true

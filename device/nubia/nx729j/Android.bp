@@ -1,0 +1,13 @@
+//
+// Copyright (C) 2023 The Android Open Source Project
+//
+// SPDX-License-Identifier: Apache-2.0
+//
+
+// Namespace marker so this device tree can be listed in
+// PRODUCT_SOONG_NAMESPACES. The A/B boot-control HAL used by this recovery is
+// the generic AOSP one that bootable/recovery installs when AB_OTA_UPDATER is
+// enabled; the TWRP 16 manifest does not carry hardware/qcom-caf/bootctrl, so
+// no vendor bootctrl module is built here.
+soong_namespace {
+}

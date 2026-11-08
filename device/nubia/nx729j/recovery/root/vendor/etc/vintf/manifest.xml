@@ -1,0 +1,49 @@
+<!--
+    Device VINTF manifest staged in the YARP recovery ramdisk.
+
+    This is the only manifest that declares the crypto HALs, so it replaces the
+    stock fragment vendor/etc/vintf/manifest/android.hardware.security.keymint-service-qti.xml
+    (which is kept in the source tree for reference but not installed).
+
+    Declared:
+      * android.hardware.security.keymint  AIDL 2.0  IKeyMintDevice/default
+        (vendor/bin/hw/android.hardware.security.keymint-service-qti, stock A13)
+      * android.hardware.security.keymint  AIDL 2.0  IRemotelyProvisionedComponent/default
+      * android.hardware.security.sharedsecret / secureclock (same service binary)
+      * android.hardware.gatekeeper       HIDL 1.0  IGatekeeper/default
+        (vendor/bin/hw/android.hardware.gatekeeper@1.0-service-qti, stock A13)
+
+    keystore2 resolves the KeyMint instance through
+    binder::get_declared_instances(), which reads exactly this manifest; vold
+    falls back to the HIDL gatekeeper path because no AIDL gatekeeper instance
+    is declared here.
+-->
+<manifest version="9.0" type="device">
+    <hal format="aidl">
+        <name>android.hardware.security.keymint</name>
+        <version>2</version>
+        <fqname>IKeyMintDevice/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.keymint</name>
+        <version>2</version>
+        <fqname>IRemotelyProvisionedComponent/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.sharedsecret</name>
+        <fqname>ISharedSecret/default</fqname>
+    </hal>
+    <hal format="aidl">
+        <name>android.hardware.security.secureclock</name>
+        <fqname>ISecureClock/default</fqname>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.gatekeeper</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IGatekeeper</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+</manifest>
