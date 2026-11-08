@@ -1,0 +1,16 @@
+name: Runner disk probe
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        label: [ubuntu-latest-4-cores, ubuntu-latest-8-cores]
+    steps:
+      - name: Report storage
+        run: |
+          df -h /
+          nproc
+          free -h
