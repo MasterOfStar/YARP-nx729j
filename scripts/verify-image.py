@@ -80,7 +80,18 @@ def main():
         image_shape = "ramdisk-only"
     require(0 < ramdisk_size <= len(data) - 4096, "Invalid ramdisk size")
     require(len(data) <= PARTITION_LIMIT, "Recovery exceeds the 100 MiB recovery partition")
-    require(data[4096:4100] in LZ4_MAGIC, "Expected an LZ4-compressed recovery ramdisk")
+    page_size = struct.unpack_from("<I", data, 36)[0]
+    require(page_size in (2048, 4096, 8192, 16384),
+            f"Unexpected boot image page size: {page_size}")
+    ramdisk_offset = page_size + ((kernel_size + page_size - 1) // page_size) * page_size
+    require(ramdisk_offset + ramdisk_size <= len(data),
+            "Ramdisk starts past the end of the recovery image")
+    require(data[ramdisk_offset:ramdisk_offset + 4] in LZ4_MAGIC,
+            "Expected an LZ4-compressed recovery ramdisk at offset "
+            f"{ramdisk_offset} (kernel_size={kernel_size})")
+    padding = data[ramdisk_offset + ramdisk_size:]
+    require(len(set(padding)) <= 1,
+            "Recovery image padding after the ramdisk is not uniform")
 
     root = product / "recovery/root"
     candidates = [root / "system/bin/recovery", root / "sbin/recovery"]
@@ -93,7 +104,9 @@ def main():
     yarp_owner = None
     gui2_owner = None
     staged_objects = [executable] + sorted(
-        path for path in root.rglob("*.so") if path.is_file())
+        path for path in root.rglob("*")
+        if path.is_file() and not path.is_symlink() and path.suffix != ".ko"
+        and path.stat().st_size <= 16 * 1024 * 1024)
     for staged in staged_objects:
         blob = staged.read_bytes()
         if yarp_owner is None and b"Yet Another Recovery Project" in blob:
@@ -149,6 +162,8 @@ def main():
         "kernel_bytes": kernel_size,
         "image_shape": image_shape,
         "ramdisk_bytes": ramdisk_size,
+        "ramdisk_offset": ramdisk_offset,
+        "page_size": page_size,
         "ramdisk_compression": "lz4",
         "encoded_os_version": os_version,
         "recovery_architecture": "aarch64",

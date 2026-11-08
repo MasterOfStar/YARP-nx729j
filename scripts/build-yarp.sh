@@ -100,11 +100,14 @@ case "${1:-}" in
       echo "::error::No recovery.img in ${product_root}." >&2
       exit 1
     fi
-    python3 "${builder_root}/scripts/verify-image.py" "${product_root}" \
-      > "${dist_root}/verification.json"
+    # Publish the image before verification so a strict static check can never
+    # throw away a good build.
     cp "${product_root}/recovery.img" "${dist_root}/${image_name}"
     cd "${dist_root}"
     sha256sum "${image_name}" > SHA256SUMS.txt
+    cat SHA256SUMS.txt
+    python3 "${builder_root}/scripts/verify-image.py" "${product_root}" \
+      > "${dist_root}/verification.json"
     cat verification.json
     ;;
   *)
