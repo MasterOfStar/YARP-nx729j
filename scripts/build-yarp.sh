@@ -5,7 +5,9 @@
 #   scripts/build-yarp.sh sync|build|package
 #
 # The device tree is *not* a repo project: it lives in this repository under
-# device/nubia/nx729j and is symlinked into the synced tree after `repo sync`.
+# device/nubia/nx729j and is copied into the synced tree after `repo sync`.
+# It must be a real directory: build/envsetup.sh discovers devices with `find`,
+# which does not descend into symlinked directories.
 set -euo pipefail
 
 builder_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,12 +19,15 @@ product="nx729j"
 image_name="YARP-nx729j-A13-recovery.img"
 mkdir -p "${source_root}" "${dist_root}"
 
-link_device_tree() {
+stage_device_tree() {
   mkdir -p "${source_root}/$(dirname "${device_rel}")"
   rm -rf "${source_root:?}/${device_rel}"
-  ln -s "${builder_root}/${device_rel}" "${source_root}/${device_rel}"
+  mkdir -p "${source_root}/${device_rel}"
+  tar -C "${builder_root}/${device_rel}" --exclude=.git -cf - . \
+    | tar -C "${source_root}/${device_rel}" -xf -
   test -f "${source_root}/${device_rel}/BoardConfig.mk"
-  echo "Linked ${builder_root}/${device_rel} -> ${source_root}/${device_rel}"
+  test -f "${source_root}/${device_rel}/AndroidProducts.mk"
+  echo "Staged ${builder_root}/${device_rel} -> ${source_root}/${device_rel} ($(du -sh "${source_root}/${device_rel}" | cut -f1))"
 }
 
 case "${1:-}" in
@@ -34,7 +39,7 @@ case "${1:-}" in
     python3 "${builder_root}/scripts/source-lock.py" overlay "${lock_file}" "${source_root}"
     repo sync -c -j "${SYNC_JOBS:-8}" --fail-fast --no-tags --no-clone-bundle \
       --optimized-fetch --retry-fetches=3
-    link_device_tree
+    stage_device_tree
     python3 "${builder_root}/scripts/source-lock.py" verify "${lock_file}" "${source_root}"
     repo manifest -r -o "${dist_root}/source-manifest.xml"
     cp "${lock_file}" "${dist_root}/sources.json"
@@ -49,7 +54,7 @@ case "${1:-}" in
     ;;
   build)
     cd "${source_root}"
-    link_device_tree
+    stage_device_tree
     export ALLOW_MISSING_DEPENDENCIES=true
     export USE_CCACHE=0
     export MALLOC_ARENA_MAX=2
@@ -63,11 +68,26 @@ case "${1:-}" in
     set +u
     source build/envsetup.sh
     lunch "twrp_${product}"
+    if [[ "${TARGET_PRODUCT:-}" != "twrp_${product}" ]]; then
+      echo "::error::lunch twrp_${product} did not select the product (TARGET_PRODUCT='${TARGET_PRODUCT:-}')." >&2
+      exit 1
+    fi
+    echo "TARGET_PRODUCT=${TARGET_PRODUCT} TARGET_DEVICE=${TARGET_DEVICE:-}"
     mka -j"${BUILD_JOBS:-2}" installclean
     mka -j"${BUILD_JOBS:-2}" recoveryimage
+    image="${source_root}/out/target/product/${product}/recovery.img"
+    if [[ ! -s "${image}" ]]; then
+      echo "::error::The build did not produce ${image}." >&2
+      exit 1
+    fi
+    ls -l "${image}"
     ;;
   package)
     product_root="${source_root}/out/target/product/${product}"
+    if [[ ! -s "${product_root}/recovery.img" ]]; then
+      echo "::error::No recovery.img in ${product_root}." >&2
+      exit 1
+    fi
     python3 "${builder_root}/scripts/verify-image.py" "${product_root}" \
       > "${dist_root}/verification.json"
     cp "${product_root}/recovery.img" "${dist_root}/${image_name}"

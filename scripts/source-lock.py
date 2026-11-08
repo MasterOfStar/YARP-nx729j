@@ -1,9 +1,9 @@
 """Generate a Repo overlay or verify the pinned YARP projects after sync.
 
 The NX729J device tree lives inside this repository (``device/nubia/nx729j``)
-and is symlinked into the synced source tree by ``build-yarp.sh``, so it is not
+and is copied into the synced source tree by ``build-yarp.sh``, so it is not
 a repo project: the lock marks it ``"revision": "in-tree"`` and the overlay and
-verification steps skip it, checking the symlink instead.
+verification steps skip it, checking the copy instead.
 """
 
 import json
@@ -53,7 +53,7 @@ def main():
         device = source / lock["device"]["path"]
         if not (device / "BoardConfig.mk").is_file():
             raise RuntimeError(f"Device tree is not linked into the source tree: {device}")
-        print(f"Verified in-tree device tree: {device} -> {device.resolve()}")
+        print(f"Verified in-tree device tree: {device} (copied from the builder repository)")
     else:
         raise ValueError(f"Unknown command: {command}")
 

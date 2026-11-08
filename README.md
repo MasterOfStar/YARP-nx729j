@@ -66,7 +66,8 @@ scripts/build-yarp.sh build            # ~2-4 h on 4 cores
 scripts/build-yarp.sh package
 ```
 
-`scripts/build-yarp.sh` symlinks `device/nubia/nx729j` into the synced tree, so
+`scripts/build-yarp.sh` copies `device/nubia/nx729j` into the synced tree (a real
+directory: `build/envsetup.sh` finds devices with `find`, which skips symlinks), so
 this device tree is never fetched from a remote and is always the one you have
 checked out.
 
