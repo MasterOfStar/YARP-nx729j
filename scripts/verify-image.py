@@ -80,18 +80,21 @@ def main():
         image_shape = "ramdisk-only"
     require(0 < ramdisk_size <= len(data) - 4096, "Invalid ramdisk size")
     require(len(data) <= PARTITION_LIMIT, "Recovery exceeds the 100 MiB recovery partition")
-    page_size = struct.unpack_from("<I", data, 36)[0]
+    # mkbootimg leaves the legacy page-size field at 0 in some v4 images even
+    # though the payload is page aligned, so treat 0 as the 4096 default.
+    page_size = struct.unpack_from("<I", data, 36)[0] or 4096
     require(page_size in (2048, 4096, 8192, 16384),
             f"Unexpected boot image page size: {page_size}")
     ramdisk_offset = page_size + ((kernel_size + page_size - 1) // page_size) * page_size
     require(ramdisk_offset + ramdisk_size <= len(data),
             "Ramdisk starts past the end of the recovery image")
-    require(data[ramdisk_offset:ramdisk_offset + 4] in LZ4_MAGIC,
+    ramdisk_magic = data[ramdisk_offset:ramdisk_offset + 4]
+    require(ramdisk_magic in LZ4_MAGIC,
             "Expected an LZ4-compressed recovery ramdisk at offset "
             f"{ramdisk_offset} (kernel_size={kernel_size})")
-    padding = data[ramdisk_offset + ramdisk_size:]
-    require(len(set(padding)) <= 1,
-            "Recovery image padding after the ramdisk is not uniform")
+    ramdisk_compression = "lz4-legacy" if ramdisk_magic == LZ4_MAGIC[0] else "lz4-frame"
+    # The image is padded out to the partition size (and may carry an AVB
+    # footer), so trailing bytes are only checked for length, not content.
 
     root = product / "recovery/root"
     candidates = [root / "system/bin/recovery", root / "sbin/recovery"]
@@ -164,7 +167,7 @@ def main():
         "ramdisk_bytes": ramdisk_size,
         "ramdisk_offset": ramdisk_offset,
         "page_size": page_size,
-        "ramdisk_compression": "lz4",
+        "ramdisk_compression": ramdisk_compression,
         "encoded_os_version": os_version,
         "recovery_architecture": "aarch64",
         "yarp_marker_object": yarp_owner,
