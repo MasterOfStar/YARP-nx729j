@@ -2,6 +2,11 @@ name: Build YARP recovery for Nubia NX729J
 
 on:
   workflow_dispatch:
+    inputs:
+      runner_label:
+        description: "Runner label (needs >= 95 GiB free and 16 GiB RAM)"
+        required: false
+        default: ubuntu-24.04
   push:
     branches: [main]
     paths:
@@ -20,7 +25,7 @@ concurrency:
 jobs:
   build:
     name: Sync sources, build recovery, verify image
-    runs-on: ubuntu-24.04
+    runs-on: ${{ github.event.inputs.runner_label || 'ubuntu-24.04' }}
     timeout-minutes: 360
     env:
       YARP_SOURCE_DIR: /build/yarp
