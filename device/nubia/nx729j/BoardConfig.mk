@@ -56,7 +56,17 @@ BOARD_MKBOOTIMG_ARGS          += --pagesize $(BOARD_KERNEL_PAGESIZE)
 # boot.img itself is kernel only (ramdisk_size = 0), and the stock
 # vendor/etc/fstab.qcom declares "/recovery emmc slotselect,avb=vbmeta", so
 # recovery is a standalone partition that never carries a kernel of its own.
+#
+# The AOSP build still wants a kernel on disk for its VINTF kernel checks
+# (PRODUCT_OTA_ENFORCE_VINTF_KERNEL_REQUIREMENTS runs extract_kernel.py over
+# $(PRODUCT_OUT)/kernel), so stage the stock image's kernel when it is present.
+# BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE keeps it out of recovery.img either
+# way, which is the part that matters on hardware.
+ifneq ($(wildcard $(DEVICE_PATH)/prebuilt/kernel),)
+TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
+else
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel_empty
+endif
 BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true
 
 # Ramdisk

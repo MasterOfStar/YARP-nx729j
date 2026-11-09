@@ -59,6 +59,7 @@ To do the same on your own machine:
 
 ```bash
 export YARP_SOURCE_DIR=/build/yarp     # needs ~95 GiB free
+python3 scripts/fetch-stock-kernel.py  # staged kernel for the build's VINTF checks
 python3 scripts/check-tree.py          # static sanity checks, a few seconds
 scripts/build-yarp.sh sync
 scripts/build-yarp.sh build            # ~2-4 h on 4 cores
