@@ -44,7 +44,8 @@
       "blob_sha": "bce06cadcfb83de05902b42d605032fb3286da82",
       "size": 100663296,
       "kernel_size": 49510912,
-      "ramdisk_size": 0
+      "ramdisk_size": 0,
+      "kernel_sha256": "c714772105ca412a1a7beb7d2c527c2151b9303579d07c5e6fe8b07889bb89fc"
     },
     "recovery_img_header": {
       "source": "first 4096 bytes of /dev/block/by-name/recovery_a",

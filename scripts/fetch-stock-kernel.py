@@ -72,8 +72,15 @@ def main():
         raise SystemExit("sources.json has no stock_firmware entry")
     target = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_TARGET
 
+    # sources.json keeps the boot image under stock_firmware.boot_img; accept
+    # the older flat keys too so the script survives either layout.
+    boot = firmware.get("boot_img") or firmware
+    blob_sha = boot.get("blob_sha") or boot.get("boot_img_blob_sha")
+    boot_size = boot.get("size") or boot.get("boot_img_size")
+    if not blob_sha or not boot_size:
+        raise SystemExit("sources.json stock_firmware lacks the boot image blob/size")
     url = (f"https://api.github.com/repos/{firmware['repository']}/git/blobs/"
-           f"{firmware['boot_img_blob_sha']}")
+           f"{blob_sha}")
     local = os.environ.get("YARP_BOOT_IMG")
     with tempfile.TemporaryDirectory() as workdir:
         if local:
@@ -83,10 +90,10 @@ def main():
             boot_img = Path(workdir) / "boot.img"
             print(f"downloading {firmware['repository']} boot.img ...")
             fetch(url, boot_img,
-                  expected_size=firmware["boot_img_size"],
+                  expected_size=boot_size,
                   token=os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN"))
         data = boot_img.read_bytes()
-        if len(data) != firmware["boot_img_size"]:
+        if len(data) != boot_size:
             raise SystemExit(f"boot.img size mismatch: {len(data)}")
         if data[:8] != b"ANDROID!":
             raise SystemExit("boot.img is not an Android boot image")
