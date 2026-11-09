@@ -74,14 +74,18 @@ checked out.
 ## Download
 
 A prebuilt image is attached to the
-[v1.0-nx729j release](https://github.com/MasterOfStar/YARP-nx729j/releases/tag/v1.0-nx729j):
+[v1.1-nx729j release](https://github.com/MasterOfStar/YARP-nx729j/releases/tag/v1.1-nx729j)
+(ramdisk-only, the shape of the stock partition):
 
 ```
-https://github.com/MasterOfStar/YARP-nx729j/releases/download/v1.0-nx729j/YARP-nx729j-A13-recovery.img
-sha256 085a8a10fd3367b42fcdc01ed9d8bb67d6989e0444a90081ce05f110b5a252db
+https://github.com/MasterOfStar/YARP-nx729j/releases/download/v1.1-nx729j/YARP-nx729j-A13-recovery.img
+sha256 99a64855fd4c1d6c2ac6494c27eddaf4c8c73c6fd937427682e7b1b3ed0908d3
 ```
 
-Build run: https://github.com/MasterOfStar/YARP-nx729j/actions/runs/42506856226 (all steps green).
+Build run: https://github.com/MasterOfStar/YARP-nx729j/actions/runs/42631187324 (all steps green).
+
+The earlier [v1.0-nx729j](https://github.com/MasterOfStar/YARP-nx729j/releases/tag/v1.0-nx729j)
+embedded the GKI kernel and did not boot on hardware; do not flash it.
 
 ## Flashing
 
