@@ -70,14 +70,14 @@ def main():
     header_version = struct.unpack_from("<I", data, 40)[0]
     require(header_version == 4, f"Unexpected boot header version: {header_version}")
     require(header_size == 1584, f"Unexpected v4 header size: {header_size}")
-    # A stock-shaped image carries the GKI kernel from boot.img; a build without
-    # prebuilt/kernel is ramdisk-only. Both are valid, nothing else is.
-    if kernel_size:
-        require(kernel_size + ramdisk_size <= len(data) - 4096,
-                "Kernel and ramdisk overrun the recovery image")
-        image_shape = "kernel+ramdisk"
-    else:
-        image_shape = "ramdisk-only"
+    # This device's recovery partition is ramdisk-only: the stock recovery.img
+    # header reports kernel_size = 0 and ramdisk_size = 56129408, and the
+    # bootloader takes the kernel from boot.img. Anything else is a build bug.
+    require(kernel_size == 0,
+            f"Recovery image must not carry a kernel (found kernel_size={kernel_size})")
+    require(ramdisk_size <= len(data) - 4096,
+            "Ramdisk overruns the recovery image")
+    image_shape = "ramdisk-only"
     require(0 < ramdisk_size <= len(data) - 4096, "Invalid ramdisk size")
     require(len(data) <= PARTITION_LIMIT, "Recovery exceeds the 100 MiB recovery partition")
     # mkbootimg leaves the legacy page-size field at 0 in some v4 images even
@@ -85,7 +85,8 @@ def main():
     page_size = struct.unpack_from("<I", data, 36)[0] or 4096
     require(page_size in (2048, 4096, 8192, 16384),
             f"Unexpected boot image page size: {page_size}")
-    ramdisk_offset = page_size + ((kernel_size + page_size - 1) // page_size) * page_size
+    ramdisk_offset = page_size
+    require(ramdisk_offset == 4096, f"Unexpected first page size: {ramdisk_offset}")
     require(ramdisk_offset + ramdisk_size <= len(data),
             "Ramdisk starts past the end of the recovery image")
     ramdisk_magic = data[ramdisk_offset:ramdisk_offset + 4]

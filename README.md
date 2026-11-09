@@ -59,7 +59,6 @@ To do the same on your own machine:
 
 ```bash
 export YARP_SOURCE_DIR=/build/yarp     # needs ~95 GiB free
-python3 scripts/fetch-stock-kernel.py  # stock GKI kernel -> prebuilt/kernel
 python3 scripts/check-tree.py          # static sanity checks, a few seconds
 scripts/build-yarp.sh sync
 scripts/build-yarp.sh build            # ~2-4 h on 4 cores
@@ -105,8 +104,11 @@ Decryption depends on the phone's **current** `/vendor` and on how its `/data`
 was encrypted, so a phone running a newer ROM (for example Android 17 on the
 same 5.15-android13 kernel) only works as-is while it still carries the stock
 vendor crypto stack: AIDL `android.hardware.security.keymint` **2.0** plus HIDL
-`android.hardware.gatekeeper@1.0`. The kernel is not a concern — the image
-carries the stock GKI 5.15.41 kernel and its matching module set.
+`android.hardware.gatekeeper@1.0`. The kernel is not a concern here: this device's recovery partition is
+ramdisk-only (stock `recovery.img`: `kernel_size = 0`,
+`ramdisk_size = 56129408`), so the bootloader supplies the kernel from the
+phone's own `boot.img`. That also means the ramdisk runs on whatever kernel
+the phone currently has.
 
 Check the live device before flashing:
 
@@ -191,18 +193,15 @@ failure to load it.
 
 * **Untested on hardware.** Static checks pass, but boot, touch, display,
   decryption and flashing must be confirmed on a device.
-* **Ramdisk-only image.** The recovery image is built without a kernel
-  (`BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE`), the same shape the existing
-  NX729J tree and the SM8850 YARP tree use. If your unit's bootloader refuses to
-  boot a kernel-less `recovery.img`, put the stock kernel back in:
-
-  ```bash
-  python3 scripts/extract-boot-kernel.py boot.img \
-      device/nubia/nx729j/prebuilt/kernel
-  # BoardConfig.mk: set TARGET_PREBUILT_KERNEL to prebuilt/kernel and comment
-  # out BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE, then rebuild.
-  # Verification: scripts/build-yarp.sh package
-  ```
+* **Ramdisk-only image.** That is the shape of the stock partition, not a
+  shortcut. Reading the first 4 KiB of `/dev/block/by-name/recovery_a` gives
+  `header_version 4`, `header_size 1584`, `kernel_size = 0`,
+  `ramdisk_size = 56129408`, and the stock `vendor/etc/fstab.qcom` declares
+  `/recovery emmc slotselect,avb=vbmeta`. `boot.img` is kernel-only
+  (`ramdisk_size = 0`), so the bootloader pairs the boot kernel with the
+  recovery ramdisk. An early build of this tree embedded the GKI kernel from
+  `boot.img` instead; it did not come up on hardware, which is why the tree now
+  always sets `BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true`.
 * **No SELinux policy is built.** TWRP recovery runs permissive, so the stock
   vendor HALs are not blocked by policy. Do not copy this tree into a build that
   enforces SELinux without adding policy for the three vendor services.

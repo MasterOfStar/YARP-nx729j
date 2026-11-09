@@ -2,3 +2,5 @@ dist/
 out/
 *.img
 *.zip
+__pycache__/
+*.pyc

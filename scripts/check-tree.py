@@ -168,18 +168,21 @@ def check_build_config():
         check(board.get(name) == expected,
               f"BoardConfig.mk: {name} is {board.get(name)!r}, expected {expected!r}")
     board_text = (DEVICE / "BoardConfig.mk").read_text(encoding="utf-8")
-    check("prebuilt/kernel_empty" in board_text,
-          "BoardConfig.mk: kernel-less fallback (prebuilt/kernel_empty) is missing")
-    kernel = DEVICE / "prebuilt/kernel"
-    if kernel.is_file():
-        check(kernel.stat().st_size > 1024 * 1024,
-              f"prebuilt/kernel is too small to be a kernel ({kernel.stat().st_size} bytes)")
-        check("$(DEVICE_PATH)/prebuilt/kernel)" in board_text,
-              "BoardConfig.mk: prebuilt/kernel exists but is not selected as TARGET_PREBUILT_KERNEL")
-    else:
-        check("BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true" in board_text,
-              "BoardConfig.mk: kernel-less build must set "
-              "BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true")
+    # The stock recovery.img on this device is ramdisk-only (kernel_size = 0);
+    # the bootloader supplies the kernel from boot.img. So the tree must always
+    # build a kernel-less recovery and must never ship a kernel of its own.
+    check("TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel_empty" in board_text,
+          "BoardConfig.mk: recovery must build against prebuilt/kernel_empty")
+    check("BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true" in board_text,
+          "BoardConfig.mk: kernel-less build must set "
+          "BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true")
+    empty = DEVICE / "prebuilt/kernel_empty"
+    check(empty.is_file(), "missing prebuilt/kernel_empty")
+    if empty.is_file():
+        check(empty.stat().st_size == 0,
+              f"prebuilt/kernel_empty must be empty ({empty.stat().st_size} bytes)")
+    check(not (DEVICE / "prebuilt/kernel").exists(),
+          "prebuilt/kernel must not be shipped: the recovery partition carries no kernel")
 
     modules = board.get("TW_LOAD_VENDOR_MODULES", "")
     for module in ("qcrypto-msm_dlkm.ko", "adsp_loader_dlkm.ko", "qti_battery_charger.ko"):

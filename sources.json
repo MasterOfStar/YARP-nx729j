@@ -4,11 +4,31 @@
     "revision": "814b553116ceedde197f70389cff9661d81d8337"
   },
   "projects": [
-    {"name": "android_build_soong", "path": "build/soong", "revision": "95e4cb167d65d5f2a034f1eeac73a920adebc09d"},
-    {"name": "android_bootable_recovery", "path": "bootable/recovery", "revision": "8a58fc3b586b8a908337fa87529cfbbb119ec7bb"},
-    {"name": "android_external_lvgl", "path": "external/lvgl", "revision": "992dd52fc5112b24845078ea60c1cf1e2e27c5b5"},
-    {"name": "android_external_libvpx", "path": "external/libvpx", "revision": "f42506c3faf4592a9d8929c9ca832fd72fff94a0"},
-    {"name": "android_external_libwebm", "path": "external/libwebm", "revision": "99fcd14602ba76998d086b602f29a243e1d5c835"}
+    {
+      "name": "android_build_soong",
+      "path": "build/soong",
+      "revision": "95e4cb167d65d5f2a034f1eeac73a920adebc09d"
+    },
+    {
+      "name": "android_bootable_recovery",
+      "path": "bootable/recovery",
+      "revision": "8a58fc3b586b8a908337fa87529cfbbb119ec7bb"
+    },
+    {
+      "name": "android_external_lvgl",
+      "path": "external/lvgl",
+      "revision": "992dd52fc5112b24845078ea60c1cf1e2e27c5b5"
+    },
+    {
+      "name": "android_external_libvpx",
+      "path": "external/libvpx",
+      "revision": "f42506c3faf4592a9d8929c9ca832fd72fff94a0"
+    },
+    {
+      "name": "android_external_libwebm",
+      "path": "external/libwebm",
+      "revision": "99fcd14602ba76998d086b602f29a243e1d5c835"
+    }
   ],
   "device": {
     "name": "YARP-nx729j",
@@ -19,8 +39,19 @@
     "repository": "RandomPush/nubia_nx729j_dump",
     "commit": "e9f5a2b43408294358ec3c736b092942b4613609",
     "build_fingerprint": "nubia/NX729J/NX729J:13/TKQ1.220915.002/eng.nubia.20221114.120645:user/release-keys",
-    "boot_img_blob_sha": "bce06cadcfb83de05902b42d605032fb3286da82",
-    "boot_img_size": 100663296,
-    "kernel_sha256": "c714772105ca412a1a7beb7d2c527c2151b9303579d07c5e6fe8b07889bb89fc"
+    "note": "Reference only. The recovery partition on this device is ramdisk-only, so no kernel is taken from this firmware any more.",
+    "boot_img": {
+      "blob_sha": "bce06cadcfb83de05902b42d605032fb3286da82",
+      "size": 100663296,
+      "kernel_size": 49510912,
+      "ramdisk_size": 0
+    },
+    "recovery_img_header": {
+      "source": "first 4096 bytes of /dev/block/by-name/recovery_a",
+      "header_version": 4,
+      "header_size": 1584,
+      "kernel_size": 0,
+      "ramdisk_size": 56129408
+    }
   }
 }

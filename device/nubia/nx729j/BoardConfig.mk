@@ -48,18 +48,16 @@ TARGET_KERNEL_CLANG_COMPILE   := true
 BOARD_MKBOOTIMG_ARGS          += --header_version $(BOARD_BOOT_HEADER_VERSION)
 BOARD_MKBOOTIMG_ARGS          += --pagesize $(BOARD_KERNEL_PAGESIZE)
 
-# The stock firmware keeps the GKI 5.15.41 kernel in boot.img (its ramdisk is
-# empty; the generic ramdisk lives in init_boot), so a stock-shaped recovery.img
-# carries that kernel plus the recovery ramdisk.
-#   scripts/fetch-stock-kernel.py  -> prebuilt/kernel  (kernel + ramdisk image)
-# Without prebuilt/kernel the build falls back to a kernel-less image, the shape
-# the existing NX729J and SM8850 YARP trees use.
-ifneq ($(wildcard $(DEVICE_PATH)/prebuilt/kernel),)
-TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
-else
+# The recovery partition holds a ramdisk only; the bootloader takes the kernel
+# from boot.img. Verified against this device's stock recovery.img header
+# (/dev/block/by-name/recovery_a, first 4096 bytes):
+#   header_version 4, header_size 1584, cmdline empty,
+#   kernel_size = 0, ramdisk_size = 56129408
+# boot.img itself is kernel only (ramdisk_size = 0), and the stock
+# vendor/etc/fstab.qcom declares "/recovery emmc slotselect,avb=vbmeta", so
+# recovery is a standalone partition that never carries a kernel of its own.
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel_empty
 BOARD_EXCLUDE_KERNEL_FROM_RECOVERY_IMAGE := true
-endif
 
 # Ramdisk
 BOARD_RAMDISK_USE_LZ4 := true

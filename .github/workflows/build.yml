@@ -55,11 +55,6 @@ jobs:
           git config --global user.email 'yarp-build@users.noreply.github.com'
           mkdir -p logs dist
 
-      - name: Fetch the stock kernel for the recovery image
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: python3 scripts/fetch-stock-kernel.py | tee logs/fetch-kernel.log
-
       - name: Validate the device tree before syncing 95 GiB of sources
         run: python3 scripts/check-tree.py | tee logs/check-tree.log
 
