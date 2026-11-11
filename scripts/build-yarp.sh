@@ -73,6 +73,25 @@ case "${1:-}" in
       exit 1
     fi
     echo "TARGET_PRODUCT=${TARGET_PRODUCT} TARGET_DEVICE=${TARGET_DEVICE:-}"
+    # The pinned CTS tree (android-16.0.0_r1) does not list "13" in
+    # cts/tests/tests/os/assets/platform_releases.txt, but our BoardConfig
+    # pins PLATFORM_VERSION := 13 to match the stock NX729J boot header's
+    # os_version field (0x1A00063C). tasks/cts.mk walks that directory
+    # whenever the `cts/` folder exists and hard-errors on any version it
+    # does not recognise. AOSP's own guidance for non-release platforms is
+    # to append the version to those two asset files, so we do that before
+    # kati reads them. This is a no-op when the version is already there.
+    cts_assets="${source_root}/cts/tests/tests/os/assets"
+    if [[ -d "${cts_assets}" ]]; then
+      for cts_asset in platform_versions.txt platform_releases.txt; do
+        cts_asset_path="${cts_assets}/${cts_asset}"
+        [[ -f "${cts_asset_path}" ]] || continue
+        if ! grep -qx "13" "${cts_asset_path}"; then
+          printf '13\n' >> "${cts_asset_path}"
+          echo "Appended 13 to ${cts_asset} for the PLATFORM_VERSION check."
+        fi
+      done
+    fi
     mka -j"${BUILD_JOBS:-2}" installclean
     if ! mka -j"${BUILD_JOBS:-2}" recoveryimage; then
       echo "::error::mka recoveryimage failed." >&2
