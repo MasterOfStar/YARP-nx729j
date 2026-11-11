@@ -190,8 +190,13 @@ def check_build_config():
               "BoardConfig.mk: prebuilt/kernel exists but prebuilt/kernel_empty is selected")
 
     modules = board.get("TW_LOAD_VENDOR_MODULES", "")
-    for module in ("qcrypto-msm_dlkm.ko", "adsp_loader_dlkm.ko", "qti_battery_charger.ko"):
+    # The load set must stay equal to the known-good TWRP for this device.
+    for module in ("adsp_loader_dlkm.ko", "qti_battery_charger.ko"):
         check(module in modules, f"BoardConfig.mk: TW_LOAD_VENDOR_MODULES lacks {module}")
+    check("qcrypto-msm_dlkm.ko" not in modules,
+          "BoardConfig.mk: qcrypto-msm_dlkm.ko is back in TW_LOAD_VENDOR_MODULES; "
+          "it is not needed for FBE and it is the one difference against the "
+          "TWRP build that boots on this device")
 
     product = read_make_vars(DEVICE / "twrp_nx729j.mk")
     check(product.get("PRODUCT_NAME") == "twrp_nx729j",

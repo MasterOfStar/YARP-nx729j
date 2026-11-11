@@ -206,10 +206,14 @@ TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "IVibrator/vibratorfeature"
 TW_SUPPORT_INPUT_AIDL_HAPTICS_FIX_OFF := true
 
 # Vendor kernel modules loaded at boot.
-# qcrypto-msm_dlkm provides the QTI inline-crypto (ICE) engine used by
-# wrappedkey_v0 + inlinecrypt_optimized; blk-crypto software fallback covers
-# the case where it fails to load.
-TW_LOAD_VENDOR_MODULES := "adsp_loader_dlkm.ko qti_battery_charger.ko qcrypto-msm_dlkm.ko"
+# Keep this identical to the known-good TWRP for this device (adsp_loader plus
+# the charger), which is what boots reliably here. qcrypto-msm_dlkm (with its
+# qce50_dlkm dependency) was dropped: it is the QCE crypto engine, not the
+# inline-crypto engine, and it is the only difference in the load set against
+# the TWRP build that is known to boot on this hardware. FBE uses blk-crypto,
+# whose software fallback is built into this kernel (blk_crypto_fallback_*),
+# so /data decryption does not depend on QCE.
+TW_LOAD_VENDOR_MODULES := "adsp_loader_dlkm.ko qti_battery_charger.ko"
 # The prebuilt set is the stock vendor_dlkm module tree; this ramdisk has no
 # separate *-gki module directory, so skip probing for one.
 TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
