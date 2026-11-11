@@ -2,14 +2,13 @@
 # All Rights Reserved.
 # Confidential and Proprietary - Qualcomm Technologies, Inc.
 #
-# Staged into the YARP recovery ramdisk; the service is also started from
-# init.recovery.qcom.rc so it is up before vold probes KeyMint.
-
-on init
-    start vendor.keymint-qti
+# Staged into the YARP recovery ramdisk.  NOT started by init: qseecomd must
+# own the QSEECom channel first, otherwise this HAL probes a TEE that is not
+# answering yet and keystore2 aborts.  qseecomd brings it up.
 
 service vendor.keymint-qti /vendor/bin/hw/android.hardware.security.keymint-service-qti
     class early_hal
     user system
     group system drmrpc
     setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib64/hw:/system/lib64
+    seclabel u:r:recovery:s0

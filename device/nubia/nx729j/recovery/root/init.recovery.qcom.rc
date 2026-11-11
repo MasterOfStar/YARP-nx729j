@@ -37,20 +37,29 @@ on fs
     chown system drmrpc /dev/qseecom
     chmod 0664 /dev/ion
     chown system system /dev/ion
+    # Its SSD listener opens by-name/ssd, which ueventd may not have made yet.
+    wait /dev/block/bootdevice/by-name/ssd 10
+    mkdir /mnt/vendor 0775 shell system
+    mkdir /mnt/vendor/persist 0775 shell system
+    wait /dev/block/bootdevice/by-name/persist
+    mount ext4 /dev/block/bootdevice/by-name/persist /persist noatime nosuid nodev barrier=1
+    mount none /persist /mnt/vendor/persist bind
     install_keyring
-    # qseecomd backs both the KeyMint (AIDL 2.0) and gatekeeper (HIDL 1.0) HALs.
-    # It is also started from vendor/etc/init/qseecomd.rc "on init"; starting it
-    # again here guarantees it is up before the crypto HALs are probed by vold.
+    # qseecomd owns the QSEECom channel used by KeyMint (AIDL) and gatekeeper
+    # (HIDL).  It starts both HALs itself once the QSEE session is up, so
+    # init must NOT start them here first -- that raced qseecomd, keystore2
+    # probed a TEE that was not answering yet and aborted.
     start vendor.qseecomd
 
 on post-fs
-    # Stock init never starts the gatekeeper HAL: it is class early_hal and
-    # recovery's init only class_start's "default" and "hal". vold needs it for
-    # synthetic password verification, so start it explicitly.
-    start gatekeeper-1-0
-    start vendor.keymint-qti
+    start odm.variant-script
 
 on init
+    # Bring up the AIDL boot-control HAL (from NX721J) so TWRP can query the
+    # active A/B slot and resolve the super partition name per slot. Without
+    # it TWRP falls back to a static "/dev/block/bootdevice/by-name/super"
+    # path and reports "Super (7) partitions | Size: 0 B".
+    start vendor.boot-qti
     start boot-hal-1-2
 
 on boot
@@ -65,5 +74,4 @@ on property:twrp.modules.loaded=true
     write /sys/kernel/boot_adsp/boot 1
     wait /sys/class/power_supply/battery
     start health-hal-2-1
-    start vibratorfeature-hal-service
     umount /firmware

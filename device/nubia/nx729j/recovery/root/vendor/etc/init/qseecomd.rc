@@ -3,10 +3,9 @@
 # Confidential and Proprietary - Qualcomm Technologies, Inc.
 #
 # Staged into the YARP recovery ramdisk. qseecomd owns the QSEECom channel that
-# both the KeyMint (AIDL 2.0) and gatekeeper (HIDL 1.0) HALs use.
-
-on init
-    start vendor.qseecomd
+# both the KeyMint (AIDL 2.0) and gatekeeper (HIDL 1.0) HALs use.  Started from
+# init.recovery.qcom.rc "on fs" AFTER the persist partition is mounted
+# (matching RedMagic 9 Pro / NX721J YARP), not from here.
 
 service vendor.qseecomd /vendor/bin/qseecomd
     socket notify-topology stream 660 system drmrpc
@@ -14,3 +13,4 @@ service vendor.qseecomd /vendor/bin/qseecomd
     user root
     group root drmrpc
     setenv LD_LIBRARY_PATH /vendor/lib64:/vendor/lib64/hw:/system/lib64
+    seclabel u:r:recovery:s0

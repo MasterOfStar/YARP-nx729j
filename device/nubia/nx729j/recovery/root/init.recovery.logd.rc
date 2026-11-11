@@ -1,0 +1,17 @@
+# Start logd in recovery so `adb logcat` works from the moment init comes up.
+# Without this the logd only starts when TWRP is fully up, which is too late
+# to capture init-time failures like the KeyMint/Gatekeeper TEE race.
+
+on init
+    start logd
+
+service logd /system/bin/logd
+    class core
+    socket logdr seqpacket 0666 root root
+    socket logdw dgram+passcred 0222 root root
+    file /proc/kmsg r
+    file /dev/kmsg w
+    user root
+    group root
+    capabilities SYSLOG AUDIT_CONTROL SETGID SETUID
+    seclabel u:r:logd:s0
