@@ -12,6 +12,7 @@ import struct
 import sys
 
 LZ4_MAGIC = (b"\x02\x21\x4c\x18", b"\x04\x22\x4d\x18")
+EXPECTED_OS_VERSION = 0x1A00063C
 PARTITION_LIMIT = 104857600
 AARCH64 = 183
 
@@ -70,6 +71,13 @@ def main():
     header_version = struct.unpack_from("<I", data, 40)[0]
     require(header_version == 4, f"Unexpected boot header version: {header_version}")
     require(header_size == 1584, f"Unexpected v4 header size: {header_size}")
+    # The stock recovery header reports 0x1A00063C (A=13, patch 2099-12). Keep
+    # this identical: the bootloader rejects images whose os_version does not
+    # fit its expectations (the TWRP default 99.87.36 encodes A=99 and is
+    # negative as a signed int32).
+    require(os_version == EXPECTED_OS_VERSION,
+            f"os_version is {os_version:#010x}, expected {EXPECTED_OS_VERSION:#010x} "
+            "(set PLATFORM_VERSION := 13 with PLATFORM_SECURITY_PATCH := 2099-12-31)")
     # This device's recovery partition is ramdisk-only: the stock recovery.img
     # header reports kernel_size = 0 and ramdisk_size = 56129408, and the
     # bootloader takes the kernel from boot.img. Anything else is a build bug.

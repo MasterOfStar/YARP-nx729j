@@ -152,8 +152,15 @@ TW_USE_FSCRYPT_POLICY := 2
 BOARD_USES_QCOM_FBE_DECRYPTION := false
 
 # Platform version / security patch
-PLATFORM_VERSION := 99.87.36
-PLATFORM_VERSION_LAST_STABLE := 99
+# PLATFORM_VERSION feeds os_version in the boot image header:
+#   os_version = (A << 25) | (B << 18) | (C << 11) | (year << 4) | month
+# The stock recovery.img reports 436209212 = 0x1A00063C, which is
+# A=13, patch 2099-12: exactly PLATFORM_VERSION 13 with the 2099-12-31 hack
+# below. The usual TWRP value 99.87.36 encodes A=99, i.e. 0xC600063C, which is
+# negative as a signed 32-bit int and does not match this bootloader's
+# expectations, so this tree stays at 13.
+PLATFORM_VERSION := 13
+PLATFORM_VERSION_LAST_STABLE := $(PLATFORM_VERSION)
 PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
 BOOT_SECURITY_PATCH := $(PLATFORM_SECURITY_PATCH)
