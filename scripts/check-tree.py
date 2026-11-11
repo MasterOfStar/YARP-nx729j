@@ -45,6 +45,12 @@ BUILD_PROVIDED = {
     "libcppcose_rkp.so", "lib_android_keymaster_keymint_utils.so",
     "libprotobuf-cpp-lite.so", "libstatslog.so", "libsqlite.so",
     "libandroidicu.so", "libicuuc.so", "libicui18n.so", "libcrypto_utils.so",
+    # AIDL boot-control HAL (vendor.boot-qti) links against these; they are
+    # already staged in system/lib64 by the TWRP recovery build itself.
+    "android.hardware.boot@1.0.so",
+    "android.hardware.boot@1.1.so",
+    "android.hardware.boot@1.2.so",
+    "android.hardware.boot-V1-ndk.so",
 }
 
 BOARDCONFIG_EXPECTED = {
@@ -151,7 +157,13 @@ def dynamic_entries(path):
 
 
 def staged_libraries():
-    """Map soname -> path for every staged vendor shared object."""
+    """Map soname -> path for every staged shared object (vendor AND system).
+
+    NX721J's vendor boot-control HAL links against system libraries like
+    android.hardware.boot@1.1.so / android.hardware.boot-V1-ndk.so, so the
+    closure has to walk both trees or the closure check falsely reports
+    unresolved DT_NEEDED.
+    """
     found = {}
     for path in sorted((DEVICE / "recovery/root").rglob("*.so")):
         try:
@@ -160,6 +172,18 @@ def staged_libraries():
             continue
         found[soname or path.name] = path
     return found
+
+
+# Extra staged .so's that the closure check must treat as build-provided even
+# when the DT_NEEDED name doesn't match the filename (e.g. boot@1.1.so lives
+# in system/lib64, not vendor/lib64).
+BUILD_PROVIDED_BOOT = {
+    "android.hardware.boot@1.0.so",
+    "android.hardware.boot@1.1.so",
+    "android.hardware.boot@1.2.so",
+    "android.hardware.boot-V1-ndk.so",
+    "android.hardware.boot-V2-ndk.so",
+}
 
 
 def check_build_config():
@@ -197,6 +221,11 @@ def check_build_config():
           "BoardConfig.mk: qcrypto-msm_dlkm.ko is back in TW_LOAD_VENDOR_MODULES; "
           "it is not needed for FBE and it is the one difference against the "
           "TWRP build that boots on this device")
+
+    brightness = board.get("TW_MAX_BRIGHTNESS", "")
+    check(brightness == "4095",
+          f"BoardConfig.mk: TW_MAX_BRIGHTNESS is {brightness!r}, expected '4095' "
+          f"(the panel rejects values below ~330 and clamps them to 4095)")
 
     product = read_make_vars(DEVICE / "twrp_nx729j.mk")
     check(product.get("PRODUCT_NAME") == "twrp_nx729j",
@@ -276,11 +305,35 @@ def check_services():
                   f"{rc.name}: service {parts[1]} points at missing {service_binary}")
 
     init_rc = (root / "init.recovery.qcom.rc").read_text(encoding="utf-8")
-    for service in ("vendor.qseecomd", "gatekeeper-1-0", "vendor.keymint-qti"):
-        check(f"start {service}" in init_rc,
-              f"init.recovery.qcom.rc does not start {service}")
+    # qseecomd starts after persist is mounted (on fs) so the TEE is reachable
+    # before keystore2 probes it; qseecomd then brings keymint + gatekeeper up
+    # itself.  init must NOT start them first -- that raced qseecomd and
+    # keystore2 aborted every few seconds (debug-3 logcat).
+    check("start vendor.qseecomd" in init_rc,
+          "init.recovery.qcom.rc does not start vendor.qseecomd")
+    check("mount ext4 /dev/block/bootdevice/by-name/persist /persist" in init_rc,
+          "init.recovery.qcom.rc must mount /persist from on fs before qseecomd")
+    check(init_rc.index("mount ext4 /dev/block/bootdevice/by-name/persist")
+          < init_rc.index("start vendor.qseecomd"),
+          "init.recovery.qcom.rc starts vendor.qseecomd before mounting /persist")
+    check("on init" in init_rc and "start vendor.boot-qti" in init_rc,
+          "init.recovery.qcom.rc must start vendor.boot-qti from on init so "
+          "TWRP resolves the per-slot super partition name")
     check("chmod 0660 /dev/qseecom" in init_rc,
           "init.recovery.qcom.rc must grant system:drmrpc access to /dev/qseecom")
+    # init must not race the TEE probe by starting keymint/gatekeeper directly.
+    for service in ("gatekeeper-1-0", "vendor.keymint-qti"):
+        check(f"start {service}" not in init_rc,
+              f"init.recovery.qcom.rc must not start {service} directly; "
+              f"qseecomd brings it up once the QSEECom channel is live")
+    # logd must be in class core so adb logcat works from the first second.
+    logd_rc = root / "init.recovery.logd.rc"
+    if check(logd_rc.is_file(), "missing init.recovery.logd.rc (adb logcat needs logd in class core)"):
+        logd_text = logd_rc.read_text(encoding="utf-8")
+        check("service logd /system/bin/logd" in logd_text,
+              "init.recovery.logd.rc: service logd is not defined")
+        check("class core" in logd_text,
+              "init.recovery.logd.rc: logd must be class core so it starts with the recovery")
 
 
 def check_vintf():
