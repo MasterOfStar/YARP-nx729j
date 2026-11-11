@@ -64,6 +64,13 @@ on init
 
 on boot
     setprop sys.usb.config adb
+    # Stock NX729J vibrator: Qualcomm IVibrator/default AIDL v2 backed by
+    # /sys/class/leds/vibrator (leds-aw22xxx.ko) + haptic.ko. The service
+    # vendor.qti.vibrator is defined in vendor/etc/init/
+    # vendor.qti.hardware.vibrator.service.rc along with the "transient"
+    # trigger write; starting it here is what makes TWRP's haptic feedback
+    # actually buzz on this device.
+    start vendor.qti.vibrator
 
 on property:twrp.modules.loaded=true
     # Mount firmware

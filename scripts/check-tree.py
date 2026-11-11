@@ -51,6 +51,15 @@ BUILD_PROVIDED = {
     "android.hardware.boot@1.1.so",
     "android.hardware.boot@1.2.so",
     "android.hardware.boot-V1-ndk.so",
+    # AIDL vibrator HAL (vendor.qti.vibrator) links against these; already
+    # staged in system/lib64 by the TWRP recovery build.
+    "android.hardware.vibrator@1.0.so",
+    "android.hardware.vibrator@1.1.so",
+    "android.hardware.vibrator@1.2.so",
+    "android.hardware.vibrator-V1-cpp.so",
+    "android.hardware.vibrator-V1-ndk.so",
+    "android.hardware.vibrator-V2-cpp.so",
+    "android.hardware.vibrator-V2-ndk.so",
 }
 
 BOARDCONFIG_EXPECTED = {
