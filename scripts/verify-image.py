@@ -156,9 +156,27 @@ def main():
             "recovery.fstab lost the metadata key directory")
 
     init_rc = (root / "init.recovery.qcom.rc").read_text(encoding="utf-8")
-    for service in ("vendor.qseecomd", "gatekeeper-1-0", "vendor.keymint-qti"):
-        require(f"start {service}" in init_rc,
-                f"init.recovery.qcom.rc does not start {service}")
+    # qseecomd must start from init.recovery.qcom.rc's `on fs` (after the
+    # persistent partition is mounted). gatekeeper-1-0 and vendor.keymint-qti
+    # must NOT be inline-started here: on unlocked RedMagic devices the TEE
+    # returns HARDWARE_TYPE_UNAVAILABLE and forcing those at init makes
+    # keystore2 panic on security_level TEE. They are started on demand by
+    # their own vendor/etc/init/*.rc files.
+    require("start vendor.qseecomd" in init_rc,
+            "init.recovery.qcom.rc must start vendor.qseecomd from `on fs`")
+    for stale in ("start gatekeeper-1-0", "start vendor.keymint-qti"):
+        require(stale not in init_rc,
+                f"init.recovery.qcom.rc must not inline-start `{stale}` — keystore2 "
+                "panics on HARDWARE_TYPE_UNAVAILABLE on unlocked devices")
+    # haptics: stock NX729J vibrator HAL (QTI IVibrator/default AIDL v2)
+    require("start vendor.qti.vibrator" in init_rc,
+            "init.recovery.qcom.rc must start vendor.qti.vibrator for haptics")
+
+    vibrator_rc = next(root.glob("vendor/etc/init/vendor.qti.hardware.vibrator.service*.rc"), None)
+    require(vibrator_rc is not None, "Missing vendor/etc/init/vendor.qti.hardware.vibrator.service.rc")
+    vtext = vibrator_rc.read_text(encoding="utf-8")
+    require("/sys/class/leds/vibrator" in vtext,
+            f"{vibrator_rc.name} does not trigger /sys/class/leds/vibrator")
 
     modules = root / "vendor/lib/modules/1.1"
     for module in ("qcrypto-msm_dlkm.ko", "adsp_loader_dlkm.ko", "qti_battery_charger.ko"):
