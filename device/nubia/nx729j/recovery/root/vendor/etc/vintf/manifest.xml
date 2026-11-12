@@ -46,6 +46,10 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <hal format="aidl">
+        <name>android.hardware.boot</name>
+        <fqname>IBootControl/default</fqname>
+    </hal>
     <hal format="hidl">
         <name>android.hidl.manager</name>
         <transport>hwbinder</transport>

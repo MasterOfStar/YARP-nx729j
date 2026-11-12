@@ -92,6 +92,16 @@ case "${1:-}" in
         fi
       done
     fi
+    # The recovery's on-device folder name is hardcoded in
+    # bootable/recovery/variables.h (TW_RECOVERY_NAME, which feeds both
+    # TW_DEFAULT_RECOVERY_FOLDER and TW_PERSIST_DIR), and nothing wires it
+    # through soong_config. Patch the header to match the YARP branding
+    # requested for this device tree.
+    variables_h="${source_root}/bootable/recovery/variables.h"
+    if [[ -f "${variables_h}" ]] && ! grep -q '^#define TW_RECOVERY_NAME  *"YARP"' "${variables_h}"; then
+      sed -i 's|^#define TW_RECOVERY_NAME.*|#define TW_RECOVERY_NAME          "YARP"|' "${variables_h}"
+      echo "Patched TW_RECOVERY_NAME -> YARP in ${variables_h#"$source_root"/}."
+    fi
     mka -j"${BUILD_JOBS:-2}" installclean
     if ! mka -j"${BUILD_JOBS:-2}" recoveryimage; then
       echo "::error::mka recoveryimage failed." >&2

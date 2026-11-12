@@ -193,16 +193,24 @@ TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel0-backlight/brightness"
 TW_MAX_BRIGHTNESS := 4095
 TW_EXTRA_LANGUAGES := true
 TW_DEFAULT_LANGUAGE := zh_CN
-TW_DEFAULT_BRIGHTNESS := 1024
+# Default to ~50% of the 4095 panel cap so the screen is comfortable indoors
+# without being unusable in sunlight (1024 was too dim at night).
+TW_DEFAULT_BRIGHTNESS := 2048
 TW_EXCLUDE_APEX := true
 TW_HAS_EDL_MODE := true
 TW_USE_SERIALNO_PROPERTY_FOR_DEVICE_ID := true
 TW_CUSTOM_CPU_TEMP_PATH := "/sys/class/thermal/thermal_zone35/temp"
 TW_BACKUP_EXCLUSIONS := /data/fonts
 TW_DEVICE_VERSION := YARP-NX729J-A13
-TW_NO_HAPTICS := true
-TW_SUPPORT_INPUT_AIDL_HAPTICS := false
-TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "IVibrator/vibratorfeature"
+# Recovery folder name on /sdcard: use YARP instead of the default TWRP.
+TW_RECOVERY_NAME := YARP
+# Stock NX729J vibrator: QTI IVibrator/default AIDL v2 (leds-aw22xxx.ko +
+# haptic.ko via /sys/class/leds/vibrator, started by vendor.qti.vibrator).
+# The bf tree shipped with TW_NO_HAPTICS := true because its Xiaomi-specific
+# IVibratorFeature HAL is not present here; our QTI HAL works, so enable it.
+TW_NO_HAPTICS := false
+TW_SUPPORT_INPUT_AIDL_HAPTICS := true
+TW_SUPPORT_INPUT_AIDL_HAPTICS_FQNAME := "IVibrator/default"
 TW_SUPPORT_INPUT_AIDL_HAPTICS_FIX_OFF := true
 
 # Vendor kernel modules loaded at boot.
