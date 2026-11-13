@@ -367,7 +367,8 @@ def check_vintf():
         instance = interface.findtext("instance", "").strip()
         if name and instance:
             fqnames.add(f"{name}/{instance}")
-    for required in ("IKeyMintDevice/default", "IGatekeeper/default"):
+    for required in ("IKeyMintDevice/default", "IGatekeeper/default",
+                     "IBootControl/default", "IHealth/default"):
         check(required in fqnames, f"VINTF manifest does not declare {required}")
     versions = [element.text.strip() for element in root.iter("version") if element.text]
     check("2" in versions, "VINTF manifest must declare KeyMint version 2 (stock A13 HAL)")
