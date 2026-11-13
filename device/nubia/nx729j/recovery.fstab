@@ -22,10 +22,13 @@ odm                                                      /odm          ext4    r
 /dev/block/bootdevice/by-name/dsp                        /vendor/dsp   vfat    ro,context=u:object_r:firmware_file:s0,shortname=lower,uid=1000,gid=1000,dmask=227,fmask=337 wait,slotselect
 # USB OTG mass storage. NX729J exposes the USB-A receptacle through the
 # 8804000 SDHCI controller (kernel logs "8804000.sdhci Adding to iommu
-# group" then "[sdg] Attached SCSI disk" for a 4 GB stick), unlike the
-# SM8550 YARP reference tree that only lists xhci-hcd. Declare both so
-# the recovery mounts whichever controller the user's device actually
-# exposes. Mounts via voldmanaged so TWRP's own partition manager can
-# create/destroy the by-name symlink without root fs_mgr involvement.
-/devices/platform/soc/8804000.sdhci/*.mmc*/host*/target*/block/sd*   /usb_otg   auto   nosuid,nodev   wait,voldmanaged=usb_otg:auto
-/devices/platform/soc/a600000.ssusb/*.dwc3/xhci-hcd.*.auto*          /usb_otg   auto   nosuid,nodev   wait,voldmanaged=usb_otg:auto
+# group" then "mmc0: SDHCI controller on 8804000.sdhci" then
+# "[sdg] Attached SCSI disk" for a 4 GB stick), unlike the SM8550 YARP
+# reference tree that only lists xhci-hcd. Declare both so the recovery
+# mounts whichever controller the user's device actually exposes. Mounts
+# via voldmanaged so TWRP's own partition manager can create/destroy the
+# by-name symlink without root fs_mgr involvement.
+# SD card glob: /devices/platform/soc/8804000.sdhci/mmc_host/mmc0/mmc0:XXXX/block/sdg
+# (mmc_host / mmcN / mmcN:slot / block / sdX — five levels below the controller).
+/devices/platform/soc/8804000.sdhci/*/*/*/*/block/sd*                 /usb_otg   auto   nosuid,nodev   wait,voldmanaged=usb_otg:auto
+/devices/platform/soc/a600000.ssusb/*/*.dwc3/xhci-hcd.*.auto*          /usb_otg   auto   nosuid,nodev   wait,voldmanaged=usb_otg:auto

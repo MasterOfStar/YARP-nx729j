@@ -46,9 +46,56 @@
             <instance>default</instance>
         </interface>
     </hal>
+    <!-- HIDL IBootControl@1.0/1.1/1.2 — required by TWRP's boot-hal-1-2
+         (system/bin/android.hardware.boot@1.2-service, which declares all
+         three interfaces). Without these entries hwservicemanager rejects
+         registration and the service exits status 1, so TWRP falls back to
+         the static "/dev/block/bootdevice/by-name/super" path and reports
+         "Super (7) partitions | Size: 0 B" in the backup UI. -->
+    <hal format="hidl">
+        <name>android.hardware.boot</name>
+        <transport>hwbinder</transport>
+        <version>1.0</version>
+        <interface>
+            <name>IBootControl</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.boot</name>
+        <transport>hwbinder</transport>
+        <version>1.1</version>
+        <interface>
+            <name>IBootControl</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
+    <hal format="hidl">
+        <name>android.hardware.boot</name>
+        <transport>hwbinder</transport>
+        <version>1.2</version>
+        <interface>
+            <name>IBootControl</name>
+            <instance>default</instance>
+        </interface>
+    </hal>
     <hal format="aidl">
         <name>android.hardware.boot</name>
         <fqname>IBootControl/default</fqname>
+    </hal>
+    <!-- HIDL IHealth@2.1 — required by TWRP's health-hal-2-1
+         (system/bin/android.hardware.health@2.1-service). Without this entry
+         hwservicemanager rejects registration and the HAL aborts (SIGABRT),
+         so healthd never reads /sys/class/power_supply/battery and the UI
+         shows a constant 100%. -->
+    <hal format="hidl">
+        <name>android.hardware.health</name>
+        <transport>hwbinder</transport>
+        <version>2.1</version>
+        <interface>
+            <name>IHealth</name>
+            <instance>default</instance>
+        </interface>
     </hal>
     <hal format="hidl">
         <name>android.hidl.manager</name>

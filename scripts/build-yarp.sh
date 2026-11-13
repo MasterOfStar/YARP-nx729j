@@ -102,6 +102,15 @@ case "${1:-}" in
       sed -i 's|^#define TW_RECOVERY_NAME.*|#define TW_RECOVERY_NAME          "YARP"|' "${variables_h}"
       echo "Patched TW_RECOVERY_NAME -> YARP in ${variables_h#"$source_root"/}."
     fi
+    # TWRP data.cpp hardcodes the default timezone as US Central
+    # ("CST6CDT,M3.2.0,M11.1.0").  For this device tree the user asked for
+    # China Standard Time (UTC+8, no DST).  Patch the default so the clock
+    # reads correctly on first boot without user interaction.
+    data_cpp="${source_root}/bootable/recovery/data.cpp"
+    if [[ -f "${data_cpp}" ]] && grep -q '"CST6CDT,M3.2.0,M11.1.0"' "${data_cpp}"; then
+      sed -i 's|"CST6CDT,M3.2.0,M11.1.0"|"CST-8"|' "${data_cpp}"
+      echo "Patched TW_TIME_ZONE_VAR default -> CST-8 (Asia/Shanghai, no DST) in ${data_cpp#"$source_root"/}."
+    fi
     mka -j"${BUILD_JOBS:-2}" installclean
     if ! mka -j"${BUILD_JOBS:-2}" recoveryimage; then
       echo "::error::mka recoveryimage failed." >&2
